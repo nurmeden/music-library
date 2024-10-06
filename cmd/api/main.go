@@ -6,7 +6,9 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/nurmeden/music-library/internal/delivery/http"
 	postgres "github.com/nurmeden/music-library/internal/infrastructure"
+	"github.com/nurmeden/music-library/internal/logger"
 	"github.com/nurmeden/music-library/internal/usecase"
+	"github.com/nurmeden/music-library/utils"
 	"log"
 	"os"
 )
@@ -23,11 +25,18 @@ func main() {
 	}
 	defer db.Close()
 
-	songRepo := postgres.NewPostgresSongRepository(db)
-	songUC := usecase.NewSongUseCase(songRepo)
+	err = utils.RunMigrations(db)
+	if err != nil {
+		log.Fatalf("failed to run migrations: %v", err)
+	}
+
+	appLogger := logger.NewZapLogger()
+
+	songRepo := postgres.NewPostgresSongRepository(db, appLogger)
+	songUC := usecase.NewSongUseCase(songRepo, appLogger)
 
 	r := gin.Default()
-	http.NewSongHandler(r, songUC)
+	http.NewSongHandler(r, songUC, appLogger)
 
 	if err := r.Run(":8080"); err != nil {
 		log.Fatal(err)

@@ -2,33 +2,38 @@ package usecase
 
 import (
 	"github.com/nurmeden/music-library/internal/entity"
+	"github.com/nurmeden/music-library/internal/logger"
 	"github.com/nurmeden/music-library/internal/repository"
 )
 
 type SongUseCase struct {
-	SongRepo repository.SongRepository
+	repo   repository.SongRepository
+	logger logger.Logger
 }
 
-func NewSongUseCase(repo repository.SongRepository) *SongUseCase {
-	return &SongUseCase{SongRepo: repo}
+func NewSongUseCase(repo repository.SongRepository, logger logger.Logger) *SongUseCase {
+	return &SongUseCase{
+		repo:   repo,
+		logger: logger,
+	}
 }
 
 func (uc *SongUseCase) FetchAll(filters map[string]interface{}, limit, offset int) ([]entity.Song, error) {
-	return uc.SongRepo.FetchAll(filters, limit, offset)
+	return uc.repo.FetchAll(filters, limit, offset)
 }
 
 func (uc *SongUseCase) FetchByID(id int) (*entity.Song, error) {
-	return uc.SongRepo.FetchByID(id)
+	return uc.repo.FetchByID(id)
 }
 
 func (uc *SongUseCase) AddNewSong(song *entity.Song) error {
-	return uc.SongRepo.Store(song)
+	return uc.repo.Store(song)
 }
 
 func (uc *SongUseCase) UpdateSong(song *entity.Song) error {
-	return uc.SongRepo.Update(song)
+	return uc.repo.Update(song)
 }
 
 func (uc *SongUseCase) DeleteSong(id int) error {
-	return uc.SongRepo.Delete(id)
+	return uc.repo.Delete(id)
 }
