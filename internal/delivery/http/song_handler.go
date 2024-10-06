@@ -5,6 +5,8 @@ import (
 	"github.com/nurmeden/music-library/internal/entity"
 	"github.com/nurmeden/music-library/internal/logger"
 	"github.com/nurmeden/music-library/internal/usecase"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"net/http"
 	"strconv"
 )
@@ -16,10 +18,58 @@ type SongHandler struct {
 
 func NewSongHandler(r *gin.Engine, uc *usecase.SongUseCase, logger logger.Logger) {
 	handler := &SongHandler{UseCase: uc, Logger: logger}
+
+	// Swagger annotations
+	// @Summary Fetch all songs
+	// @Description Get a list of songs with optional filters.
+	// @Tags songs
+	// @Produce json
+	// @Param group query string false "Group name"
+	// @Param song query string false "Song name"
+	// @Param limit query int false "Limit of songs"
+	// @Param offset query int false "Offset for pagination"
+	// @Success 200 {array} entity.Song
+	// @Failure 500 {object} gin.H
+	// @Router /songs [get]
 	r.GET("/songs", handler.FetchAllSongs)
+
+	// @Summary Add a new song
+	// @Description Add a new song to the library.
+	// @Tags songs
+	// @Accept json
+	// @Produce json
+	// @Param song body entity.Song true "Song data"
+	// @Success 201 {object} gin.H
+	// @Failure 400 {object} gin.H
+	// @Failure 500 {object} gin.H
+	// @Router /songs [post]
 	r.POST("/songs", handler.AddSong)
+
+	// @Summary Update an existing song
+	// @Description Update a song by its ID.
+	// @Tags songs
+	// @Accept json
+	// @Produce json
+	// @Param id path int true "Song ID"
+	// @Param song body entity.Song true "Updated song data"
+	// @Success 200 {object} gin.H
+	// @Failure 400 {object} gin.H
+	// @Failure 500 {object} gin.H
+	// @Router /songs/{id} [put]
 	r.PUT("/songs/:id", handler.UpdateSong)
+
+	// @Summary Delete a song
+	// @Description Mark a song as deleted by its ID.
+	// @Tags songs
+	// @Produce json
+	// @Param id path int true "Song ID"
+	// @Success 200 {object} gin.H
+	// @Failure 400 {object} gin.H
+	// @Failure 500 {object} gin.H
+	// @Router /songs/{id} [delete]
 	r.DELETE("/songs/:id", handler.DeleteSong)
+
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
 
 func (h *SongHandler) FetchAllSongs(c *gin.Context) {
